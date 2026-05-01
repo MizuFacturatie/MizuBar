@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mizubar - openstaande betaling iDEAL</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #e9eef3;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .payment-container {
+            max-width: 500px;
+            width: 100%;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 35px -10px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .company-header {
+            background: #1a1a2e;
+            color: white;
+            padding: 20px 25px;
+            text-align: center;
+        }
+
+        .company-name {
+            font-size: 28px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .company-name span {
+            color: #e67e22;
+        }
+
+        .company-address {
+            font-size: 13px;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+
+        .ideal-badge {
+            background: #ffffff;
+            color: #cc0000;
+            padding: 8px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 14px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .payment-info {
+            padding: 25px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .amount {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 16px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .amount-label {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .amount-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .amount-value small {
+            font-size: 16px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px dashed #eee;
+            font-size: 14px;
+        }
+
+        .detail-label {
+            color: #666;
+        }
+
+        .detail-value {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .bank-section {
+            padding: 0 25px 25px 25px;
+        }
+
+        .bank-label {
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: block;
+            color: #333;
+        }
+
+        select {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #ccc;
+            border-radius: 12px;
+            font-size: 16px;
+            background: white;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .pay-button {
+            width: 100%;
+            background: #cc0000;
+            color: white;
+            border: none;
+            padding: 16px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-bottom: 15px;
+        }
+
+        .pay-button:hover {
+            background: #a00000;
+            transform: scale(1.01);
+        }
+
+        .pay-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .security-note {
+            font-size: 12px;
+            color: #888;
+            text-align: center;
+        }
+
+        .success-panel {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border-radius: 20px;
+            padding: 20px;
+            margin: 15px 25px 25px 25px;
+            text-align: center;
+            display: none;
+            border: 2px solid #4caf50;
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .qr-container {
+            background: white;
+            padding: 15px;
+            border-radius: 16px;
+            display: inline-block;
+            margin: 10px auto;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .fake-qr {
+            font-family: 'Courier New', monospace;
+            font-size: 10px;
+            line-height: 1.2;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            color: #1a1a2e;
+            letter-spacing: 1px;
+        }
+
+        .transaction-id {
+            background: #1e2a3e;
+            color: #a5d6a7;
+            padding: 12px;
+            border-radius: 40px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            margin: 15px 0;
+            word-break: break-all;
+        }
+
+        .prank-reveal {
+            background: #ff9800;
+            color: white;
+            padding: 12px;
+            border-radius: 12px;
+            margin-top: 15px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .footer-phone {
+            background: #f5f5f5;
+            padding: 12px;
+            text-align: center;
+            font-size: 12px;
+            color: #555;
+            border-top: 1px solid #ddd;
+        }
+
+        .footer-phone strong {
+            color: #1a1a2e;
+        }
+    </style>
+</head>
+<body>
+
+<div class="payment-container">
+    <div class="company-header">
+        <div class="company-name">MIZU<span>BAR</span></div>
+        <div class="company-address">Gustav Mahlerlaan 50a, 1082 ME Amsterdam</div>
+    </div>
+
+    <div class="ideal-badge">
+        🔒 iDEAL betaling • Mollie Secure
+    </div>
+
+    <div class="payment-info">
+        <div class="amount">
+            <div class="amount-label">Openstaande factuur</div>
+            <div class="amount-value">€ 63,<small>20</small></div>
+        </div>
+
+        <div class="detail-row">
+            <span class="detail-label">Factuurnummer:</span>
+            <span class="detail-value">MZ-2405-8823</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Datum:</span>
+            <span class="detail-value">1 mei 2026</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Omschrijving:</span>
+            <span class="detail-value">Sake tasting menu + servicekosten</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Betaaltermijn:</span>
+            <span class="detail-value" style="color:#e67e22;">⚠️ Vandaag laatste dag</span>
+        </div>
+    </div>
+
+    <div class="bank-section">
+        <label class="bank-label">Kies uw bank voor iDEAL</label>
+        <select id="bankSelect">
+            <option>-- Selecteer uw bank --</option>
+            <option>ABN AMRO</option>
+            <option>ING</option>
+            <option>Rabobank</option>
+            <option>De Volksbank (SNS/ASN/RegioBank)</option>
+            <option>Triodos Bank</option>
+            <option>Knab</option>
+            <option>bunq</option>
+        </select>
+
+        <button class="pay-button" id="payBtn" onclick="startFakePayment()">💳 Betaal nu € 63,20</button>
+        <div class="security-note">
+            ✅ iDEAL beveiligd • Je betaalt veilig via vertrouwde bankomgeving
+        </div>
+    </div>
+
+    <div id="successPanel" class="success-panel">
+        <div style="font-size: 18px; margin-bottom: 10px;">🏦 iDEAL betaling</div>
+        <div class="qr-container">
+            <div class="fake-qr" id="qrCode">
+                ██████████████████<br>
+                ██░░░░██░░░░░░██░░██<br>
+                ██░░████░░████░░██<br>
+                ██████░░░░░░██████<br>
+                ██████████████████
+            </div>
+        </div>
+        <div class="transaction-id" id="transactionId">
+            Laden...
+        </div>
+        <div class="prank-reveal" id="prankReveal" style="display: none;">
+            🎉 G E K   G E K O L O N I S E E R D 🎉<br>
+            Geen betaling! Dit was een grap van je collega.
+        </div>
+    </div>
+
+    <div class="footer-phone">
+        📞 <strong>020 642 4600</strong> • Mizubar Amsterdam
+    </div>
+</div>
+
+<script>
+    function generateTransactionId() {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let id = 'iDEAL-';
+        for (let i = 0; i < 4; i++) {
+            id += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        id += '-';
+        for (let i = 0; i < 6; i++) {
+            id += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        id += '-';
+        for (let i = 0; i < 3; i++) {
+            id += Math.floor(Math.random() * 10);
+        }
+        return id;
+    }
+
+    function generateRandomQR() {
+        const qrVariants = [
+            "██████████████████\n██░░░░██░░░░░░██░░██\n██░░████░░████░░██\n██████░░░░░░██████\n██████████████████",
+            "███░░░████░░░░███\n██░░██░░██░░██░░██\n████████░░░░██████\n██░░░░░░████░░░░██\n██████████████████",
+            "██████████████████\n██░░░░████░░░░░░██\n██░░██░░██░░██░░██\n████░░████████░░██\n██████████████████"
+        ];
+        return qrVariants[Math.floor(Math.random() * qrVariants.length)];
+    }
+
+    function startFakePayment() {
+        let bankSelect = document.getElementById("bankSelect");
+        if (bankSelect.selectedIndex === 0 || bankSelect.value === "-- Selecteer uw bank --") {
+            alert("Kies eerst uw bank om de betaling te voltooien.");
+            return;
+        }
+
+        let btn = document.getElementById("payBtn");
+        btn.disabled = true;
+        btn.innerHTML = "⏳ Betaling verwerken...";
+        
+        let panel = document.getElementById("successPanel");
+        panel.style.display = "block";
+        document.getElementById("transactionId").innerHTML = "⏳ Transactie wordt verwerkt...";
+        panel.scrollIntoView({ behavior: "smooth", block: "center" });
+        
+        setTimeout(function() {
+            let txId = generateTransactionId();
+            let qrCode = generateRandomQR();
+            
+            document.getElementById("qrCode").innerHTML = qrCode;
+            document.getElementById("transactionId").innerHTML = txId;
+            
+            setTimeout(function() {
+                let prankDiv = document.getElementById("prankReveal");
+                prankDiv.style.display = "block";
+                prankDiv.scrollIntoView({ behavior: "smooth", block: "center" });
+                
+                btn.innerHTML = "😂 Grap onthuld!";
+                
+                console.log("%c 🎭 MIZUBAR PRANK - Je collega heeft je te pakken! Geen echte betaling. 🎭", "color: #ff6600; font-size: 14px; font-weight: bold;");
+            }, 800);
+        }, 2000);
+    }
+</script>
+</body>
+</html>
